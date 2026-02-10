@@ -1,7 +1,37 @@
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.development
+.env.production
 
 # Claude Code (local only)
 .claude/
 
-# Cache
+# Python cache
 *.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
 
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

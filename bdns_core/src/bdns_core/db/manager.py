@@ -17,14 +17,15 @@ import os
 
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
-env_dev = Path(__file__).parent.parent.parent / ".env.development"
-env_file = Path(__file__).parent.parent.parent / ".env"
+# Cargar variables de entorno según ambiente
+environment = os.getenv("ENVIRONMENT", "development")
 
-if env_dev.exists():
-    load_dotenv(env_dev)
+if environment == "production":
+    env_file = Path(__file__).parent.parent.parent / ".env"
 else:
-    load_dotenv(env_file)
+    env_file = Path(__file__).parent.parent.parent / ".env.development"
+
+load_dotenv(env_file)
 
 
 class DatabaseConfig:

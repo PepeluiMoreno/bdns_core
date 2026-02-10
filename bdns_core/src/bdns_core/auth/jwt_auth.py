@@ -12,18 +12,30 @@ Características:
 """
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
+from pathlib import Path
+import os
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# Cargar variables de entorno según ambiente
+environment = os.getenv("ENVIRONMENT", "development")
+
+if environment == "production":
+    env_file = Path(__file__).parent.parent.parent / ".env"
+else:
+    env_file = Path(__file__).parent.parent.parent / ".env.development"
+
+load_dotenv(env_file)
 
 
-# Configuración JWT
-# IMPORTANTE: En producción, usar variables de entorno
-SECRET_KEY = "tu-clave-secreta-muy-segura-cambiar-en-produccion"  # TODO: Mover a .env
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+# Configuración JWT desde variables de entorno
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback-secret-key-CHANGE-IN-PRODUCTION")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
 
 # Contexto de hashing de passwords
