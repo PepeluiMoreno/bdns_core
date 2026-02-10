@@ -5,10 +5,15 @@ src/bdns_core.egg-info/SOURCES.txt
 src/bdns_core.egg-info/dependency_links.txt
 src/bdns_core.egg-info/requires.txt
 src/bdns_core.egg-info/top_level.txt
+src/bdns_core/auth/__init__.py
+src/bdns_core/auth/jwt_auth.py
+src/bdns_core/business/equivalencia.py
 src/bdns_core/db/__init__.py
 src/bdns_core/db/base.py
 src/bdns_core/db/enums.py
+src/bdns_core/db/etl_models.py
 src/bdns_core/db/manager.py
 src/bdns_core/db/models.py
+src/bdns_core/db/nif_utils.py
 src/bdns_core/db/session.py
 src/bdns_core/db/utils.py

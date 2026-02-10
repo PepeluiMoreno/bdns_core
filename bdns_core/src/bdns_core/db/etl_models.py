@@ -54,6 +54,7 @@ class EtlJob(UUIDMixin, Base):
     __table_args__ = (
         UniqueConstraint("entity", "year", "mes", "tipo", "stage", name="uq_etl_job"),
         Index("ix_etl_job_pending", "status", "stage"),
+        {'schema': 'etl_admin'}
     )
 
 
@@ -79,13 +80,18 @@ class EtlExecution(UUIDMixin, Base):
     - execution_time_seconds: Duración de la ejecución
     """
     __tablename__ = "etl_execution"
+    __table_args__ = {'schema': 'etl_admin'}
 
     created_at = Column(DateTime, nullable=False, server_default="now()")
+    current_phase = Column(String(50))  # Fase actual: extracting, transforming, loading, validating
+    current_operation = Column(Text)  # Operación específica en curso
+    entrypoint = Column(String(255))  # Script/entrypoint que se está ejecutando
     entity = Column(String(50))
     error_message = Column(Text)
     execution_time_seconds = Column(Integer)
     execution_type = Column(String(20), nullable=False, index=True)
     finished_at = Column(DateTime)
+    progress_percentage = Column(Integer, default=0)  # Porcentaje de progreso (0-100)
     records_errors = Column(Integer, default=0)
     records_inserted = Column(Integer, default=0)
     records_processed = Column(Integer, default=0)
@@ -116,6 +122,7 @@ class SyncControl(UUIDMixin, Base, AuditMixin):
     - deletes_detectados: Registros eliminados en origen
     """
     __tablename__ = "sync_control"
+    __table_args__ = {'schema': 'etl_admin'}
 
     deletes_detectados = Column(Integer, default=0)
     error = Column(Text)
