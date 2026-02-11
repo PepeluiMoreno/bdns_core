@@ -44,11 +44,59 @@ class AuditMixin:
 
 
 # =========================================================
+# USUARIOS Y AUTENTICACIÓN
+# =========================================================
+
+class Usuario(UUIDMixin, AuditMixin, Base):
+    """
+    Usuario del sistema BDNS.
+
+    Usado para autenticación en bdns_etl (admin) y opcionalmente
+    para notificaciones en bdns_portal.
+
+    Roles:
+    - admin: Acceso completo a ETL y administración
+    - user: Acceso limitado a ETL (solo lectura)
+    - viewer: Solo lectura en portal
+    """
+    __tablename__ = "usuario"
+
+    # Credenciales básicas
+    username = Column(String(100), unique=True, nullable=False, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+
+    # Información personal
+    nombre = Column(String(255))
+
+    # Control de acceso
+    role = Column(String(50), nullable=False, default="user", index=True)
+    activo = Column(Boolean, nullable=False, default=True, index=True)
+
+    # Integración con Telegram (para notificaciones)
+    telegram_chat_id = Column(String(50), unique=True, index=True)
+    telegram_username = Column(String(100))
+    telegram_verificado = Column(Boolean, default=False)
+
+    # Índices para consultas frecuentes
+    __table_args__ = (
+        Index("idx_usuario_username_activo", "username", "activo"),
+        Index("idx_usuario_email_activo", "email", "activo"),
+        Index("idx_usuario_role_activo", "role", "activo"),
+        {'schema': 'bdns'}
+    )
+
+    def __repr__(self):
+        return f"<Usuario(username={self.username}, email={self.email}, role={self.role})>"
+
+
+# =========================================================
 # CATALOGOS
 # =========================================================
 
 class Finalidad(UUIDMixin, Base):
     __tablename__ = "finalidad"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
@@ -57,6 +105,7 @@ class Finalidad(UUIDMixin, Base):
 
 class Fondo(UUIDMixin, Base):
     __tablename__ = "fondo"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
@@ -65,6 +114,7 @@ class Fondo(UUIDMixin, Base):
 
 class FormaJuridica(UUIDMixin, Base):
     __tablename__ = "forma_juridica"
+    __table_args__ = {'schema': 'bdns'}
 
     codigo = Column(String, nullable=False, unique=True, index=True)
     codigo_natural = Column(String(1), nullable=False, index=True)
@@ -76,6 +126,7 @@ class FormaJuridica(UUIDMixin, Base):
 
 class Instrumento(UUIDMixin, Base):
     __tablename__ = "instrumento"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
@@ -84,6 +135,7 @@ class Instrumento(UUIDMixin, Base):
 
 class Objetivo(UUIDMixin, Base):
     __tablename__ = "objetivo"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
@@ -95,7 +147,7 @@ class Organo(UUIDMixin, Base):
 
     codigo = Column(String, nullable=False, unique=True, index=True)
     hijos = relationship("Organo", back_populates="padre")
-    id_padre = Column(Uuid, ForeignKey("organo.id"))
+    id_padre = Column(Uuid, ForeignKey("bdns.organo.id"))
     nivel1 = Column(String)
     nivel1_norm = Column(String)
     nivel2 = Column(String)
@@ -108,13 +160,15 @@ class Organo(UUIDMixin, Base):
 
     __table_args__ = (
         Index("ix_organo_niveles", "nivel1_norm", "nivel2_norm", "nivel3_norm"),
+        {'schema': 'bdns'}
     )
 
 
 class Reglamento(UUIDMixin, Base):
     __tablename__ = "reglamento"
+    __table_args__ = {'schema': 'bdns'}
 
-    ambito = Column(String, nullable=False)
+    ambito = Column(String, default="GE")
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
     descripcion_norm = Column(String)
@@ -122,17 +176,19 @@ class Reglamento(UUIDMixin, Base):
 
 class Region(UUIDMixin, Base):
     __tablename__ = "region"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String, nullable=False)
     descripcion_norm = Column(String, nullable=False)
     hijos = relationship("Region", back_populates="padre")
-    id_padre = Column(Uuid, ForeignKey("region.id"))
+    id_padre = Column(Uuid, ForeignKey("bdns.region.id"))
     padre = relationship("Region", remote_side="Region.id", back_populates="hijos")
 
 
 class RegimenAyuda(UUIDMixin, Base):
     __tablename__ = "regimen_ayuda"
+    __table_args__ = {'schema': 'bdns'}
 
     descripcion = Column(String, nullable=False, unique=True)
     descripcion_norm = Column(String, nullable=False, unique=True, index=True)
@@ -140,17 +196,19 @@ class RegimenAyuda(UUIDMixin, Base):
 
 class SectorActividad(UUIDMixin, Base):
     __tablename__ = "sector_actividad"
+    __table_args__ = {'schema': 'bdns'}
 
     codigo = Column(String, nullable=False, unique=True, index=True)
     descripcion = Column(String, nullable=False)
     descripcion_norm = Column(String, index=True)
     hijos = relationship("SectorActividad", back_populates="padre")
-    id_padre = Column(Uuid, ForeignKey("sector_actividad.id"))
+    id_padre = Column(Uuid, ForeignKey("bdns.sector_actividad.id"))
     padre = relationship("SectorActividad", remote_side="SectorActividad.id", back_populates="hijos")
 
 
 class SectorProducto(UUIDMixin, Base):
     __tablename__ = "sector_producto"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
@@ -159,6 +217,7 @@ class SectorProducto(UUIDMixin, Base):
 
 class TipoBeneficiario(UUIDMixin, Base):
     __tablename__ = "tipo_beneficiario"
+    __table_args__ = {'schema': 'bdns'}
 
     api_id = Column(Integer, unique=True, index=True)
     descripcion = Column(String)
@@ -171,15 +230,16 @@ class TipoBeneficiario(UUIDMixin, Base):
 
 class Beneficiario(UUIDMixin, Base, AuditMixin):
     __tablename__ = "beneficiario"
+    __table_args__ = {'schema': 'bdns'}
 
     forma_juridica = relationship("FormaJuridica")
-    forma_juridica_id = Column(Uuid, ForeignKey("forma_juridica.id"))
+    forma_juridica_id = Column(Uuid, ForeignKey("bdns.forma_juridica.id"))
     nif = Column(String, index=True)
     nombre = Column(String, nullable=False)
     nombre_norm = Column(String, nullable=False)
     pseudonimos = relationship("Pseudonimo", back_populates="beneficiario", cascade="all, delete-orphan")
     tipo_beneficiario = relationship("TipoBeneficiario")
-    tipo_beneficiario_id = Column(Uuid, ForeignKey("tipo_beneficiario.id"))
+    tipo_beneficiario_id = Column(Uuid, ForeignKey("bdns.tipo_beneficiario.id"))
 
     @property
     def es_entidad_publica(self) -> bool:
@@ -207,12 +267,13 @@ class Pseudonimo(UUIDMixin, Base):
     __tablename__ = "pseudonimo"
 
     beneficiario = relationship("Beneficiario", back_populates="pseudonimos")
-    beneficiario_id = Column(Uuid, ForeignKey("beneficiario.id"), nullable=False)
+    beneficiario_id = Column(Uuid, ForeignKey("bdns.beneficiario.id"), nullable=False)
     pseudonimo = Column(String, nullable=False)
     pseudonimo_norm = Column(String, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("beneficiario_id", "pseudonimo_norm", name="uq_beneficiario_pseudonimo"),
+        {'schema': 'bdns'}
     )
 
 
@@ -222,15 +283,19 @@ class Pseudonimo(UUIDMixin, Base):
 
 class Convocatoria(UUIDMixin, Base, AuditMixin):
     __tablename__ = "convocatoria"
+    __table_args__ = {'schema': 'bdns'}
 
-    codigo_bdns = Column(String, nullable=False, unique=True, index=True)
+    id_bdns = Column(String, nullable=False, unique=True, index=True)  # ID de BDNS
+    codigo_bdns = Column(String, nullable=True, unique=False, index=True)  # Código alternativo
+    titulo = Column(String)  # Título de la convocatoria
     descripcion = Column(Text)
     fecha_recepcion = Column(Date)
+    fecha_publicacion = Column(Date)
     organo = relationship("Organo")
-    organo_id = Column(Uuid, ForeignKey("organo.id"))
+    organo_id = Column(Uuid, ForeignKey("bdns.organo.id"))
     presupuesto_total = Column(Float)
     reglamento = relationship("Reglamento")
-    reglamento_id = Column(Uuid, ForeignKey("reglamento.id"))
+    reglamento_id = Column(Uuid, ForeignKey("bdns.reglamento.id"))
 
 
 class Concesion(Base, AuditMixin):
@@ -266,20 +331,20 @@ class Concesion(Base, AuditMixin):
 
     # Campos de negocio (alfabético)
     beneficiario = relationship("Beneficiario")
-    beneficiario_id = Column(Uuid, ForeignKey("beneficiario.id"), nullable=False)
+    beneficiario_id = Column(Uuid, ForeignKey("bdns.beneficiario.id"), nullable=False)
     convocatoria = relationship("Convocatoria")
-    convocatoria_id = Column(Uuid, ForeignKey("convocatoria.id"), nullable=False)
+    convocatoria_id = Column(Uuid, ForeignKey("bdns.convocatoria.id"), nullable=False)
     id_concesion = Column(String, nullable=False)
     importe_equivalente = Column(Float)
     importe_nominal = Column(Float)
     regimen_ayuda = relationship("RegimenAyuda")
-    regimen_ayuda_id = Column(Uuid, ForeignKey("regimen_ayuda.id"))
+    regimen_ayuda_id = Column(Uuid, ForeignKey("bdns.regimen_ayuda.id"))
 
     __table_args__ = (
         UniqueConstraint("id_concesion", "fecha_concesion", "regimen_tipo", name="uq_concesion_id_fecha"),
         Index("ix_concesion_id_concesion", "id_concesion", "fecha_concesion"),
         Index("ix_concesion_regimen_fecha", "regimen_tipo", "fecha_concesion"),
-        {'postgresql_partition_by': 'RANGE (fecha_concesion)'}
+        {'postgresql_partition_by': 'RANGE (fecha_concesion)', 'schema': 'bdns'}
     )
 
     @property
