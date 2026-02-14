@@ -3,6 +3,7 @@ from bdns_core.db.base import Base
 from bdns_core.db.models import *
 from bdns_core.db.etl_models import *  # Modelos de control ETL
 from bdns_core.db.manager import *
+from .session import get_db, get_db_context, engine, async_engine
 
 __all__ = [
     "AsyncDatabaseManager",
@@ -10,7 +11,8 @@ __all__ = [
     "Beneficiario",
     "Concesion",
     "Convocatoria",
-    "Documento",
+    "DocumentoConvocatoria",
+    "AnuncioConvocatoria",
     "EtlExecution",
     "EtlJob",
     "Finalidad",
@@ -19,7 +21,7 @@ __all__ = [
     "Instrumento",
     "Objetivo",
     "Organo",
-    "Programa",
+    # "Programa",                 # ❌ ELIMINADO (no existe)
     "Pseudonimo",
     "Region",
     "RegimenAyuda",
@@ -29,4 +31,8 @@ __all__ = [
     "SyncControl",
     "SyncDatabaseManager",
     "TipoBeneficiario",
+    "get_db",
+    "get_db_context", 
+    "engine",
+    "async_engine",
 ]

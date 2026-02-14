@@ -1,23 +1,51 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-
-
 [project]
 name = "bdns-core"
-version = "1.0.0"
+version = "0.1.0"
+description = "BDNS Core - Modelos de datos, configuración y utilidades compartidas"
+readme = "README.md"
 requires-python = ">=3.11"
+license = {text = "Proprietary"}
+authors = [
+    {name = "Pepelui Moreno", email = "joseluis.morgomez@gmail.com"},
+]
+
 dependencies = [
-    "sqlalchemy>=2.0",
-    "psycopg2-binary>=2.9",
-    "asyncpg>=0.29",
-    "pydantic>=2.0",
-    "python-dotenv>=1.2",
-    "uuid-utils>=0.9",
+    # Database
+    "sqlalchemy>=2.0.23",
+    "alembic>=1.12.0",
+    "asyncpg>=0.29.0",
+    "psycopg2-binary>=2.9.9",
+    
+    # Pydantic
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.0.0",
+    
+    # Utils
+    "python-dotenv>=1.0.0",
+    "uuid-utils>=0.7.0",
+    
+    # Auth (JWT)
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.4",
+    "bcrypt>=4.0.1",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.6.0",
+]
+
+[project.scripts]
+bdns-init-db = "scripts.init_db:main"
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -27,4 +55,21 @@ where = ["src"]
 include = ["bdns_core*"]
 
 [tool.setuptools.package-data]
-bdns_core = ["py.typed"]
+"bdns_core" = ["db/bootstrap/*.sql"]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "B", "C4", "ARG"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
