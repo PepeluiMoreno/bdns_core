@@ -291,6 +291,54 @@ class Convocatoria(UUIDMixin, Base, AuditMixin):
     documentos = relationship("DocumentoConvocatoria", back_populates="convocatoria", cascade="all, delete-orphan")
     anuncios = relationship("AnuncioConvocatoria", back_populates="convocatoria", cascade="all, delete-orphan")
 
+    # ==========================================
+    # PROPERTIES PARA SINCRONIZACIÓN
+    # ==========================================
+
+    @property
+    def se_sincroniza(self) -> bool:
+        """
+        Determina si esta convocatoria debe incluirse en el proceso de sincronización.
+
+        Criterio: Se EXCLUYE si está cerrada hace más de SYNC_DIAS_TRAS_CIERRE.
+        - Si abierto=True → siempre se sincroniza
+        - Si abierto=False y sin fecha_fin → se sincroniza (por seguridad)
+        - Si abierto=False y fecha_fin + SYNC_DIAS_TRAS_CIERRE < hoy → NO se sincroniza
+
+        El umbral de días se configura vía variable de entorno SYNC_DIAS_TRAS_CIERRE (default: 720).
+        """
+        from datetime import datetime, timedelta
+        from bdns_core.config import get_etl_settings
+
+        if self.abierto:  # Mientras no renombremos a "abierta"
+            return True
+
+        if not self.fecha_fin_solicitud:
+            return True  # Sin fecha, por seguridad sincronizamos
+
+        settings = get_etl_settings()
+        dias_desde_cierre = (datetime.now().date() - self.fecha_fin_solicitud).days
+        return dias_desde_cierre <= settings.SYNC_DIAS_TRAS_CIERRE
+
+    @property
+    def dias_desde_cierre(self) -> int | None:
+        """Días transcurridos desde el cierre (útil para debug/logs)."""
+        from datetime import datetime
+
+        if not self.fecha_fin_solicitud:
+            return None
+        return (datetime.now().date() - self.fecha_fin_solicitud).days
+
+    @property
+    def estado_sincronizacion(self) -> str:
+        """Descripción legible del estado para logs."""
+        if self.abierto:
+            return "abierta"
+        if self.se_sincroniza:
+            dias = self.dias_desde_cierre or 0
+            return f"cerrada_reciente ({dias}d)"
+        return f"cerrada_antigua ({self.dias_desde_cierre}d, excluida)"
+
 
 class DocumentoConvocatoria(UUIDMixin, Base):
     __tablename__ = "documento_convocatoria"

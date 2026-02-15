@@ -129,6 +129,13 @@ class ETLSettings(BaseSettings):
         description="Directorio temporal para archivos ETL"
     )
 
+    SYNC_DIAS_TRAS_CIERRE: int = Field(
+        default=720,
+        ge=0,
+        le=3650,
+        description="Días tras cierre para excluir convocatorias de sincronización (720 = 2 años)"
+    )
+
     # ==========================================
     # DOCKER SECRETS (para usuarios admin/user)
     # ==========================================
